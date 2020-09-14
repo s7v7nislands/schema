@@ -331,7 +331,11 @@ func (d *Decoder) decode(v reflect.Value, path string, parts []pathPart, values 
 			val = values[len(values)-1]
 		}
 
-		if conv != nil {
+		if val == "" {
+			if d.zeroEmpty {
+				v.Set(reflect.Zero(t))
+			}
+		} else if conv != nil {
 			if value := conv(val); value.IsValid() {
 				v.Set(value.Convert(t))
 			} else {
@@ -364,10 +368,6 @@ func (d *Decoder) decode(v reflect.Value, path string, parts []pathPart, values 
 						Err:   err,
 					}
 				}
-			}
-		} else if val == "" {
-			if d.zeroEmpty {
-				v.Set(reflect.Zero(t))
 			}
 		} else if conv := builtinConverters[t.Kind()]; conv != nil {
 			if value := conv(val); value.IsValid() {
